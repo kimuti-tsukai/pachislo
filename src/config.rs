@@ -47,15 +47,15 @@ impl Display for ConfigError {
 impl Error for ConfigError {}
 
 impl ConfigError {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self { errors: Vec::new() }
     }
 
-    pub fn append(&mut self, error: &mut ConfigError) {
+    pub(crate) fn append(&mut self, error: &mut ConfigError) {
         self.errors.append(&mut error.errors);
     }
 
-    pub fn push(&mut self, error: String) {
+    pub(crate) fn push(&mut self, error: String) {
         self.errors.push(error);
     }
 
@@ -65,13 +65,13 @@ impl ConfigError {
 }
 
 impl Config {
-    pub fn validate(&self) -> Result<(), ConfigError> {
+    pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         self.probability.validate()
     }
 }
 
 impl Probability {
-    pub fn validate(&self) -> Result<(), ConfigError> {
+    pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         let mut error = ConfigError::new();
         if self.start_hole < 0.0 || self.start_hole > 1.0 {
             error.push("start_hole probability must be between 0.0 and 1.0".to_string());
@@ -90,7 +90,7 @@ impl Probability {
 }
 
 impl SlotProbability {
-    pub fn validate(&self) -> Result<(), ConfigError> {
+    pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         let mut error = ConfigError::new();
         if self.win < 0.0 || self.win > 1.0 {
             error.push("win probability must be between 0.0 and 1.0".to_string());

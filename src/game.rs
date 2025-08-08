@@ -47,7 +47,7 @@ pub enum GameState {
 }
 
 impl GameState {
-    pub fn launch_ball(&mut self) -> Result<(), UninitializedError> {
+    pub(crate) fn launch_ball(&mut self) -> Result<(), UninitializedError> {
         match self {
             Self::Uninitialized => Err(UninitializedError),
             Self::Normal { balls } => {
@@ -79,11 +79,11 @@ impl GameState {
         }
     }
 
-    pub fn is_uninitialized(&self) -> bool {
+    pub(crate) fn is_uninitialized(&self) -> bool {
         matches!(self, Self::Uninitialized)
     }
 
-    pub fn init(&mut self, config: &BallsConfig) -> Result<(), AlreadyStartedError> {
+    pub(crate) fn init(&mut self, config: &BallsConfig) -> Result<(), AlreadyStartedError> {
         if self.is_uninitialized() {
             *self = Self::Normal {
                 balls: config.init_balls,
@@ -94,7 +94,7 @@ impl GameState {
         }
     }
 
-    pub fn increment_balls(&mut self, config: &BallsConfig) {
+    pub(crate) fn increment_balls(&mut self, config: &BallsConfig) {
         match self {
             Self::Uninitialized => unreachable!(),
             Self::Normal { balls } => *balls += config.incremental_balls,
@@ -104,7 +104,7 @@ impl GameState {
         }
     }
 
-    pub fn is_rush(&self) -> bool {
+    pub(crate) fn is_rush(&self) -> bool {
         match self {
             Self::Uninitialized => false,
             Self::Normal { .. } => false,
@@ -114,7 +114,7 @@ impl GameState {
 
     /// Into RUSH or Continue RUSH
     /// Include Incremental Balls and Rush Balls
-    pub fn trigger_rush(&mut self, config: &BallsConfig) {
+    pub(crate) fn trigger_rush(&mut self, config: &BallsConfig) {
         match self {
             Self::Uninitialized => unreachable!(),
             Self::Normal { balls } => {
