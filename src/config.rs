@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 /// Configuration for the game.
 pub struct Config {
     pub balls: BallsConfig,
@@ -29,4 +31,76 @@ pub struct Probability {
     pub rush: SlotProbability,
     pub rush_continue: SlotProbability,
     pub rush_continue_fn: fn(usize) -> f64,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ConfigError {
+    errors: Vec<String>,
+}
+
+impl Display for ConfigError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ConfigError: {}", self.errors.join("\n"))
+    }
+}
+
+impl Error for ConfigError {}
+
+impl ConfigError {
+    pub fn new() -> Self {
+        Self { errors: Vec::new() }
+    }
+
+    pub fn append(&mut self, error: &mut ConfigError) {
+        self.errors.append(&mut error.errors);
+    }
+
+    pub fn push(&mut self, error: String) {
+        self.errors.push(error);
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.errors.is_empty()
+    }
+}
+
+impl Config {
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        self.probability.validate()
+    }
+}
+
+impl Probability {
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        let mut error = ConfigError::new();
+        if self.start_hole < 0.0 || self.start_hole > 1.0 {
+            error.push("start_hole probability must be between 0.0 and 1.0".to_string());
+        }
+        if let Err(mut err) = self.normal.validate() {
+            error.append(&mut err);
+        }
+        if let Err(mut err) = self.rush.validate() {
+            error.append(&mut err);
+        }
+        if let Err(mut err) = self.rush_continue.validate() {
+            error.append(&mut err);
+        }
+        if error.is_empty() { Ok(()) } else { Err(error) }
+    }
+}
+
+impl SlotProbability {
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        let mut error = ConfigError::new();
+        if self.win < 0.0 || self.win > 1.0 {
+            error.push("win probability must be between 0.0 and 1.0".to_string());
+        }
+        if self.fake_win < 0.0 || self.fake_win > 1.0 {
+            error.push("fake_win probability must be between 0.0 and 1.0".to_string());
+        }
+        if self.fake_lose < 0.0 || self.fake_lose > 1.0 {
+            error.push("fake_lose probability must be between 0.0 and 1.0".to_string());
+        }
+        if error.is_empty() { Ok(()) } else { Err(error) }
+    }
 }
