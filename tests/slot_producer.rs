@@ -1,10 +1,11 @@
 use std::time::Instant;
 
 use pachislo::slot::SlotProducer;
+use rand::rngs::ThreadRng;
 
 #[test]
 fn win() {
-    let mut slot_producer = SlotProducer::new(3, (1..=9).collect());
+    let mut slot_producer: SlotProducer<u8, ThreadRng> = SlotProducer::new(3, (1..=9).collect());
 
     for _ in 0..1000 {
         let mut slot = slot_producer.produce_win();
@@ -30,7 +31,7 @@ fn lose() {
     ];
 
     for (length, choices) in test_cases {
-        let mut producer = SlotProducer::new(length, choices.clone());
+        let mut producer: SlotProducer<u8, ThreadRng> = SlotProducer::new(length, choices.clone());
 
         // 決定論的に検証可能な条件をテスト
         for _ in 0..1_000_000 {
@@ -56,7 +57,7 @@ fn lose() {
 
 #[test]
 fn big_lose() {
-    let mut producer = SlotProducer::new(10000, (0..1000000).collect());
+    let mut producer: SlotProducer<u32, ThreadRng> = SlotProducer::new(10000, (0..1000000).collect());
 
     let start = Instant::now();
 

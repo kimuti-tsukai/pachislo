@@ -1,19 +1,33 @@
-use rand::{rngs::ThreadRng, seq::{IndexedRandom, SliceRandom}, Rng};
+use rand::{
+    Rng,
+    rngs::ThreadRng,
+    seq::{IndexedRandom, SliceRandom},
+};
 
 use crate::lottery::{Lose, LotteryResult, Win};
 
-pub struct SlotProducer<T> {
+pub struct SlotProducer<T, R: Rng = ThreadRng> {
     length: usize,
     choices: Vec<T>,
-    rng: ThreadRng,
+    rng: R,
 }
 
-impl<T: Clone> SlotProducer<T> {
+impl<T, R: Rng + Default> SlotProducer<T, R> {
     pub fn new(length: usize, choices: Vec<T>) -> Self {
         Self {
             length,
             choices,
-            rng: rand::rng(),
+            rng: R::default(),
+        }
+    }
+}
+
+impl<T: Clone, R: Rng> SlotProducer<T, R> {
+    pub fn with_rng(length: usize, choices: Vec<T>, rng: R) -> Self {
+        Self {
+            length,
+            choices,
+            rng,
         }
     }
 

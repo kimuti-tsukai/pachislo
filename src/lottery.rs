@@ -1,9 +1,9 @@
-use rand::{rngs::ThreadRng, Rng};
+use rand::{Rng, rngs::ThreadRng};
 
 use crate::config::{Probability, SlotProbability};
 
-pub struct Lottery {
-    rng: ThreadRng,
+pub struct Lottery<R: Rng = ThreadRng> {
+    rng: R,
     probability: Probability,
 }
 
@@ -31,12 +31,18 @@ impl LotteryResult {
     }
 }
 
-impl Lottery {
+impl<R: Rng + Default> Lottery<R> {
     pub fn new(probability: Probability) -> Self {
         Self {
-            rng: ThreadRng::default(),
+            rng: R::default(),
             probability,
         }
+    }
+}
+
+impl<R: Rng> Lottery<R> {
+    pub fn with_rng(probability: Probability, rng: R) -> Self {
+        Self { rng, probability }
     }
 
     pub fn start_hole(&mut self) -> bool {
