@@ -32,6 +32,7 @@ impl<O: UserOutput> UserInput<O> for CuiInput {
                 "s" => return Some(Box::new(StartGame)),
                 "l" | "" => return Some(Box::new(LaunchBall)),
                 "q" => return Some(Box::new(FinishGame)),
+                "q!" => return None,
                 _ => (),
             }
         }
