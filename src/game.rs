@@ -170,6 +170,7 @@ where
             });
 
             let Some(mut command) = self.input.wait_for_input() else {
+                let _ = self.finish();
                 break;
             };
 
