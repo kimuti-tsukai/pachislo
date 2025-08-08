@@ -14,7 +14,7 @@ fn main() {
 
     let output = CuiOutput::new();
 
-    let mut game = Game::new(CONFIG, input, output);
+    let mut game = Game::new(CONFIG, input, output).unwrap();
 
     game.run();
 }

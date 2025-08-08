@@ -90,7 +90,7 @@ fn test() {
 
     let output = TestOutput::new();
 
-    let mut game = Game::new(CONFIG, input, output);
+    let mut game = Game::new(CONFIG, input, output).unwrap();
 
     game.run();
 

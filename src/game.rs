@@ -1,7 +1,7 @@
 use std::{error::Error, fmt::Display};
 
 use crate::{
-    config::{BallsConfig, Config},
+    config::{BallsConfig, Config, ConfigError},
     interface::{UserInput, UserOutput},
     lottery::Lottery,
 };
@@ -150,14 +150,15 @@ where
     I: UserInput<O>,
     O: UserOutput,
 {
-    pub fn new(config: Config, input: I, output: O) -> Self {
-        Self {
+    pub fn new(config: Config, input: I, output: O) -> Result<Self, ConfigError> {
+        config.validate()?;
+        Ok(Self {
             state: GameState::Uninitialized,
             lottery: Lottery::new(config.probability),
             config: config.balls,
             input,
             output,
-        }
+        })
     }
 
     pub fn run(&mut self) {
