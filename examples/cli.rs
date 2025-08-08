@@ -2,7 +2,7 @@ use std::io::{self, Stdin};
 
 use pachislo::{
     CONFIG_EXAMPLE as CONFIG, Game,
-    command::{ControllCommand, FinishGame, LaunchBall, StartGame},
+    command::{ControlCommand, FinishGame, LaunchBall, StartGame},
     game::{GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
@@ -24,7 +24,7 @@ pub struct CuiInput {
 }
 
 impl<O: UserOutput> UserInput<O> for CuiInput {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControllCommand<Self, O>>> {
+    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, O>>> {
         loop {
             let mut s = String::new();
             self.stdin.read_line(&mut s).ok()?;

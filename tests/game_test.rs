@@ -1,6 +1,6 @@
 use pachislo::{
     CONFIG_EXAMPLE as CONFIG,
-    command::{ControllCommand, LaunchBall, StartGame},
+    command::{ControlCommand, LaunchBall, StartGame},
     game::{Game, GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
@@ -18,7 +18,7 @@ impl TestInput {
 }
 
 impl UserInput<TestOutput> for TestInput {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControllCommand<Self, TestOutput>>> {
+    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, TestOutput>>> {
         if self.first {
             self.first = false;
             Some(Box::new(StartGame))

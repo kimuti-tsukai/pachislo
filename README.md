@@ -87,7 +87,7 @@ Implement the `UserInput<O>` and `UserOutput` traits to create custom interfaces
 
 ```rust
 impl UserInput<MyOutput> for MyInput {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControllCommand<Self, MyOutput>>> {
+    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, MyOutput>>> {
         // Your input handling logic
     }
 }
@@ -103,12 +103,12 @@ impl UserOutput for MyOutput {
 
 ### Custom Commands
 
-Extend the command system by implementing `ControllCommand<I, O>`:
+Extend the command system by implementing `ControlCommand<I, O>`:
 
 ```rust
 pub struct MyCommand;
 
-impl<I, O> ControllCommand<I, O> for MyCommand
+impl<I, O> ControlCommand<I, O> for MyCommand
 where
     I: UserInput<O>,
     O: UserOutput,

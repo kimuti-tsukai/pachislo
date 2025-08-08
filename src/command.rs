@@ -1,12 +1,12 @@
 use crate::{game::Game, interface::{UserInput, UserOutput}};
 
-pub trait ControllCommand<I, O> {
+pub trait ControlCommand<I, O> {
     fn execute(&mut self, game: &mut Game<I, O>);
 }
 
 pub struct LaunchBall;
 
-impl<I, O> ControllCommand<I, O> for LaunchBall
+impl<I, O> ControlCommand<I, O> for LaunchBall
 where
     I: UserInput<O>,
     O: UserOutput,
@@ -18,7 +18,7 @@ where
 
 pub struct StartGame;
 
-impl<I, O> ControllCommand<I, O> for StartGame
+impl<I, O> ControlCommand<I, O> for StartGame
 where
     I: UserInput<O>,
     O: UserOutput,
@@ -30,7 +30,7 @@ where
 
 pub struct FinishGame;
 
-impl<I, O> ControllCommand<I, O> for FinishGame
+impl<I, O> ControlCommand<I, O> for FinishGame
 where
     I: UserInput<O>,
     O: UserOutput,
