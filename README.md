@@ -40,7 +40,7 @@ The simulator is built around several core components:
 use pachislo::{Game, CONFIG_EXAMPLE};
 
 // Create game with your input/output implementations
-let mut game = Game::new(CONFIG_EXAMPLE, your_input, your_output);
+let mut game = Game::new(CONFIG_EXAMPLE, your_input, your_output).unwrap();
 
 // Run the game loop
 game.run();
