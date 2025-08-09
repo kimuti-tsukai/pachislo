@@ -36,6 +36,9 @@ struct TestOutput {
     win_rush: usize,
     win_rush_continue: usize,
     max_continue: usize,
+    continue_count: usize,
+    continue_sum: usize,
+    final_state: GameState,
 }
 
 impl UserOutput for TestOutput {
@@ -45,14 +48,18 @@ impl UserOutput for TestOutput {
             after: state,
         } = state;
 
-        if let (GameState::Normal { .. }, Some(GameState::Rush { n, .. })) = (state, before)
-            && n > self.max_continue
-        {
-            self.max_continue = n;
+        if let (GameState::Normal { .. }, Some(GameState::Rush { n, .. })) = (state, before) {
+            self.continue_count += 1;
+            self.continue_sum += n;
+            if n > self.max_continue {
+                self.max_continue = n;
+            }
         }
     }
 
-    fn finish_game(&mut self, _state: &GameState) {}
+    fn finish_game(&mut self, state: &GameState) {
+        self.final_state = *state;
+    }
 
     fn lottery_normal(&mut self, result: LotteryResult) {
         if result.is_win() {
@@ -80,13 +87,16 @@ impl TestOutput {
             win_rush: 0,
             win_rush_continue: 0,
             max_continue: 0,
+            continue_count: 0,
+            continue_sum: 0,
+            final_state: GameState::Uninitialized,
         }
     }
 }
 
 #[test]
 fn test() {
-    let input = TestInput::new(100000000);
+    let input = TestInput::new(1000000000);
 
     let output = TestOutput::new();
 
@@ -101,13 +111,11 @@ fn test() {
         "Total: {}",
         game.output().win_normal + game.output().win_rush + game.output().win_rush_continue
     );
-    println!("Max continue: {}", game.output().max_continue);
+    println!("Continue count: {}", game.output().continue_count);
     println!(
-        "Final balls: {}",
-        match game.state() {
-            GameState::Uninitialized => 0,
-            GameState::Normal { balls } => *balls,
-            GameState::Rush { balls, .. } => *balls,
-        }
-    )
+        "Average continue: {}",
+        game.output().continue_sum as f64 / game.output().continue_count as f64
+    );
+    println!("Max continue: {}", game.output().max_continue);
+    println!("Final state: {:?}", game.output().final_state);
 }
