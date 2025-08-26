@@ -169,6 +169,6 @@ fn test() {
             output.continue_sum as f64 / output.continue_count as f64
         );
         println!("Max continue: {}", output.max_continue);
-        println!("Final state: {:?}", output.final_state);
+        println!("Final state: {:#?}", output.final_state);
     });
 }
