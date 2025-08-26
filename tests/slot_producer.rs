@@ -57,7 +57,8 @@ fn lose() {
 
 #[test]
 fn big_lose() {
-    let mut producer: SlotProducer<u32, ThreadRng> = SlotProducer::new(10000, (0..1000000).collect());
+    let mut producer: SlotProducer<u32, ThreadRng> =
+        SlotProducer::new(10000, (0..1000000).collect());
 
     let start = Instant::now();
 

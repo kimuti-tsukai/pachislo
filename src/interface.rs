@@ -15,4 +15,3 @@ pub trait UserOutput {
     fn lottery_rush(&mut self, result: LotteryResult);
     fn lottery_rush_continue(&mut self, result: LotteryResult);
 }
-
