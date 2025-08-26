@@ -1,6 +1,7 @@
-use std::{error::Error, fmt::Display};
+use std::{collections::VecDeque, error::Error, fmt::Display};
 
 use crate::{
+    command::Command,
     config::{BallsConfig, Config, ConfigError},
     interface::{UserInput, UserOutput},
     lottery::Lottery,
@@ -163,13 +164,21 @@ where
 
     pub fn run(&mut self) {
         let mut before = None;
+
+        let mut command_queue = VecDeque::new();
+
         loop {
             self.output.default(Transition {
                 before,
                 after: &self.state,
             });
 
-            let Some(mut command) = self.input.wait_for_input() else {
+            let Command::Control(mut command) = (loop {
+                if let Some(command) = command_queue.pop_front() {
+                    break command;
+                }
+                command_queue.extend(self.input.wait_for_input());
+            }) else {
                 let _ = self.finish();
                 break;
             };
@@ -197,14 +206,10 @@ where
     }
 
     pub fn launch_ball(&mut self) -> Result<(), UninitializedError> {
-        self.state.launch_ball()?;
+        self.state.launch_ball()
+    }
 
-        if !self.lottery.start_hole() {
-            return Ok(());
-        }
-
-        // When hit start hole
-
+    pub fn cause_lottery(&mut self) {
         let result;
         if self.state.is_rush() {
             result = self.lottery.lottery_rush();
@@ -215,14 +220,14 @@ where
         }
 
         if !(result.is_win()) {
-            return Ok(());
+            return;
         }
 
         // When win the lottery
 
         let GameState::Rush { n, .. } = self.state else {
             self.state.trigger_rush(&self.config);
-            return Ok(());
+            return;
         };
 
         // When rush
@@ -235,8 +240,6 @@ where
         } else {
             self.state.increment_balls(&self.config)
         };
-
-        Ok(())
     }
 
     pub fn state(&self) -> &GameState {

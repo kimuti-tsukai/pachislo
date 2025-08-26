@@ -1,32 +1,53 @@
+use std::{
+    sync::{Arc, Mutex},
+    thread,
+};
+
 use pachislo::{
-    CONFIG_EXAMPLE as CONFIG,
-    command::{ControlCommand, LaunchBall, StartGame},
+    CONFIG_EXAMPLE as CONFIG, START_HOLE_PROBABILITY_EXAMPLE,
+    command::{CauseLottery, Command, LaunchBall, StartGame},
     game::{Game, GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
 };
+use rand::{Rng, rngs::ThreadRng};
 
 struct TestInput {
     n: usize,
+    start_hole_probability: f64,
+    rng: ThreadRng,
     first: bool,
 }
 
 impl TestInput {
-    fn new(n: usize) -> Self {
-        TestInput { n, first: true }
+    fn new(n: usize, start_hole_probability: f64) -> Self {
+        assert!((0.0..=1.0).contains(&start_hole_probability));
+        TestInput {
+            n,
+            start_hole_probability,
+            rng: rand::rng(),
+            first: true,
+        }
     }
 }
 
 impl UserInput<TestOutput> for TestInput {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, TestOutput>>> {
+    fn wait_for_input(&mut self) -> Vec<Command<Self, TestOutput>> {
         if self.first {
             self.first = false;
-            Some(Box::new(StartGame))
+            vec![Command::Control(Box::new(StartGame))]
         } else if self.n > 0 {
             self.n -= 1;
-            Some(Box::new(LaunchBall))
+            if self.rng.random_bool(self.start_hole_probability) {
+                vec![
+                    Command::Control(Box::new(LaunchBall)),
+                    Command::Control(Box::new(CauseLottery)),
+                ]
+            } else {
+                vec![Command::Control(Box::new(LaunchBall))]
+            }
         } else {
-            None
+            vec![Command::FinishGame]
         }
     }
 }
@@ -38,7 +59,7 @@ struct TestOutput {
     max_continue: usize,
     continue_count: usize,
     continue_sum: usize,
-    final_state: GameState,
+    final_state: Vec<GameState>,
 }
 
 impl UserOutput for TestOutput {
@@ -58,7 +79,7 @@ impl UserOutput for TestOutput {
     }
 
     fn finish_game(&mut self, state: &GameState) {
-        self.final_state = *state;
+        self.final_state[0] = *state;
     }
 
     fn lottery_normal(&mut self, result: LotteryResult) {
@@ -89,33 +110,65 @@ impl TestOutput {
             max_continue: 0,
             continue_count: 0,
             continue_sum: 0,
-            final_state: GameState::Uninitialized,
+            final_state: vec![GameState::Uninitialized],
         }
+    }
+
+    fn add(&mut self, other: &TestOutput) {
+        self.win_normal += other.win_normal;
+        self.win_rush += other.win_rush;
+        self.win_rush_continue += other.win_rush_continue;
+        self.max_continue = self.max_continue.max(other.max_continue);
+        self.continue_count += other.continue_count;
+        self.continue_sum += other.continue_sum;
+        self.final_state.push(other.final_state[0]);
     }
 }
 
 #[test]
 fn test() {
-    let input = TestInput::new(1000000000);
+    thread::scope(|s| {
+        let mut handles = Vec::with_capacity(8);
 
-    let output = TestOutput::new();
+        let global_output = Arc::new(Mutex::new(TestOutput::new()));
 
-    let mut game = Game::new(CONFIG, input, output).unwrap();
+        for _ in 0..8 {
+            let global_output = Arc::clone(&global_output);
 
-    game.run();
+            let handle = s.spawn(move || {
+                let input = TestInput::new(20000000, START_HOLE_PROBABILITY_EXAMPLE);
 
-    println!("Win normal: {}", game.output().win_normal);
-    println!("Win rush: {}", game.output().win_rush);
-    println!("Win rush continue: {}", game.output().win_rush_continue);
-    println!(
-        "Total: {}",
-        game.output().win_normal + game.output().win_rush + game.output().win_rush_continue
-    );
-    println!("Continue count: {}", game.output().continue_count);
-    println!(
-        "Average continue: {}",
-        game.output().continue_sum as f64 / game.output().continue_count as f64
-    );
-    println!("Max continue: {}", game.output().max_continue);
-    println!("Final state: {:?}", game.output().final_state);
+                let output = TestOutput::new();
+
+                let mut game = Game::new(CONFIG, input, output).unwrap();
+
+                game.run();
+
+                global_output.lock().unwrap().add(game.output());
+            });
+
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        let output = global_output.lock().unwrap();
+
+        println!("Win normal: {}", output.win_normal);
+        println!("Win rush: {}", output.win_rush);
+        println!("Win rush continue: {}", output.win_rush_continue);
+        println!(
+            "Total: {}",
+            output.win_normal + output.win_rush + output.win_rush_continue
+        );
+        println!("Continue count: {}", output.continue_count);
+        println!(
+            "Average continue: {}",
+            output.continue_sum as f64 / output.continue_count as f64
+        );
+        println!("Max continue: {}", output.max_continue);
+        println!("Final state: {:?}", output.final_state);
+    });
 }

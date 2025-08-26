@@ -1,11 +1,11 @@
 use crate::{
-    command::ControlCommand,
+    command::Command,
     game::{GameState, Transition},
     lottery::LotteryResult,
 };
 
-pub trait UserInput<O: UserOutput> {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, O>>>;
+pub trait UserInput<O: UserOutput>: Sized {
+    fn wait_for_input(&mut self) -> Vec<Command<Self, O>>;
 }
 
 pub trait UserOutput {
@@ -15,3 +15,4 @@ pub trait UserOutput {
     fn lottery_rush(&mut self, result: LotteryResult);
     fn lottery_rush_continue(&mut self, result: LotteryResult);
 }
+

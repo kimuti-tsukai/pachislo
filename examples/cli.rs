@@ -1,16 +1,17 @@
 use std::io::{self, Stdin};
 
 use pachislo::{
-    CONFIG_EXAMPLE as CONFIG, Game,
-    command::{ControlCommand, FinishGame, LaunchBall, StartGame},
+    CONFIG_EXAMPLE as CONFIG, Game, START_HOLE_PROBABILITY_EXAMPLE,
+    command::{CauseLottery, Command, FinishGame, LaunchBall, StartGame},
     game::{GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
     slot::SlotProducer,
 };
+use rand::{Rng, rngs::ThreadRng};
 
 fn main() {
-    let input = CuiInput::new();
+    let input = CuiInput::new(START_HOLE_PROBABILITY_EXAMPLE);
 
     let output = CuiOutput::new();
 
@@ -20,19 +21,30 @@ fn main() {
 }
 
 pub struct CuiInput {
+    start_hole_probability: f64,
+    rng: ThreadRng,
     stdin: Stdin,
 }
 
 impl<O: UserOutput> UserInput<O> for CuiInput {
-    fn wait_for_input(&mut self) -> Option<Box<dyn ControlCommand<Self, O>>> {
+    fn wait_for_input(&mut self) -> Vec<Command<Self, O>> {
         loop {
             let mut s = String::new();
-            self.stdin.read_line(&mut s).ok()?;
+            self.stdin.read_line(&mut s).ok();
             match s.trim() {
-                "s" => return Some(Box::new(StartGame)),
-                "l" | "" => return Some(Box::new(LaunchBall)),
-                "q" => return Some(Box::new(FinishGame)),
-                "q!" => return None,
+                "s" => return vec![Command::Control(Box::new(StartGame))],
+                "l" | "" => {
+                    return if self.rng.random_bool(self.start_hole_probability) {
+                        vec![
+                            Command::Control(Box::new(LaunchBall)),
+                            Command::Control(Box::new(CauseLottery)),
+                        ]
+                    } else {
+                        vec![Command::Control(Box::new(LaunchBall))]
+                    };
+                }
+                "q" => return vec![Command::Control(Box::new(FinishGame))],
+                "q!" => return vec![Command::FinishGame],
                 _ => (),
             }
         }
@@ -40,14 +52,13 @@ impl<O: UserOutput> UserInput<O> for CuiInput {
 }
 
 impl CuiInput {
-    pub fn new() -> Self {
-        Self { stdin: io::stdin() }
-    }
-}
-
-impl Default for CuiInput {
-    fn default() -> Self {
-        Self::new()
+    pub fn new(start_hole_probability: f64) -> Self {
+        assert!((0.0..=1.0).contains(&start_hole_probability));
+        Self {
+            start_hole_probability,
+            rng: rand::rng(),
+            stdin: io::stdin(),
+        }
     }
 }
 

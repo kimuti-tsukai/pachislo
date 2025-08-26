@@ -45,10 +45,6 @@ impl<R: Rng> Lottery<R> {
         Self { rng, probability }
     }
 
-    pub fn start_hole(&mut self) -> bool {
-        self.rng.random_bool(self.probability.start_hole)
-    }
-
     pub fn lottery(&mut self, probability: SlotProbability) -> LotteryResult {
         let SlotProbability {
             win,

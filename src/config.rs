@@ -26,7 +26,6 @@ pub struct SlotProbability {
 /// Probability of winning a ball.
 #[derive(Debug, Clone, Copy)]
 pub struct Probability {
-    pub start_hole: f64,
     pub normal: SlotProbability,
     pub rush: SlotProbability,
     pub rush_continue: SlotProbability,
@@ -73,9 +72,6 @@ impl Config {
 impl Probability {
     pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         let mut error = ConfigError::new();
-        if self.start_hole < 0.0 || self.start_hole > 1.0 {
-            error.push("start_hole probability must be between 0.0 and 1.0".to_string());
-        }
         if let Err(mut err) = self.normal.validate() {
             error.append(&mut err);
         }

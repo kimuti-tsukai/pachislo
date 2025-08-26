@@ -9,6 +9,8 @@ pub use game::Game;
 
 use crate::config::{BallsConfig, Config, Probability, SlotProbability};
 
+pub const START_HOLE_PROBABILITY_EXAMPLE: f64 = 0.12;
+
 // Config of Game
 pub const CONFIG_EXAMPLE: Config = Config {
     // Config of Balls
@@ -22,9 +24,6 @@ pub const CONFIG_EXAMPLE: Config = Config {
     },
     // Config of Probability
     probability: Probability {
-        // Probability of hitting the start hole
-        start_hole: 0.12,
-
         // Probability of lottery in normal mode
         normal: SlotProbability {
             // Probability of winning
@@ -63,13 +62,3 @@ pub const CONFIG_EXAMPLE: Config = Config {
         rush_continue_fn: |n| 0.8f64.powi(n as i32 - 1),
     },
 };
-
-// fn main() {
-//     let input = CuiInput::new();
-
-//     let output = CuiOutput::new();
-
-//     let mut game = Game::new(CONFIG, input, output);
-
-//     game.run();
-// }
