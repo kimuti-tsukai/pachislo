@@ -36,7 +36,7 @@ pub const CONFIG_EXAMPLE: Config = Config {
 
         // Probability of lottery in rush mode
         rush: SlotProbability {
-            win: 0.8,
+            win: 0.48,
             fake_win: 0.2,
             fake_lose: 0.05,
         },
@@ -59,6 +59,6 @@ pub const CONFIG_EXAMPLE: Config = Config {
         //
         // This function should be return 1 when n == 1
         // This function should be monotonically non-increasing
-        rush_continue_fn: |n| 0.8f64.powi(n as i32 - 1),
+        rush_continue_fn: |n| 0.6f64.powi(n as i32 - 1),
     },
 };
