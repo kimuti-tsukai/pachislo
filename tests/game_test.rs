@@ -5,17 +5,15 @@ use std::{
 
 use pachislo::{
     CONFIG_EXAMPLE as CONFIG, START_HOLE_PROBABILITY_EXAMPLE,
-    command::{CauseLottery, Command, LaunchBall, StartGame},
+    command::{Command, LaunchBallFlowProducer, StartGame},
     game::{Game, GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
 };
-use rand::{Rng, rngs::ThreadRng};
 
 struct TestInput {
     n: usize,
-    start_hole_probability: f64,
-    rng: ThreadRng,
+    launch_ball_flow_producer: LaunchBallFlowProducer,
     first: bool,
 }
 
@@ -24,8 +22,7 @@ impl TestInput {
         assert!((0.0..=1.0).contains(&start_hole_probability));
         TestInput {
             n,
-            start_hole_probability,
-            rng: rand::rng(),
+            launch_ball_flow_producer: LaunchBallFlowProducer::new(start_hole_probability),
             first: true,
         }
     }
@@ -38,14 +35,10 @@ impl UserInput<TestOutput> for TestInput {
             vec![Command::Control(Box::new(StartGame))]
         } else if self.n > 0 {
             self.n -= 1;
-            if self.rng.random_bool(self.start_hole_probability) {
-                vec![
-                    Command::Control(Box::new(LaunchBall)),
-                    Command::Control(Box::new(CauseLottery)),
-                ]
-            } else {
-                vec![Command::Control(Box::new(LaunchBall))]
-            }
+
+            vec![Command::Control(Box::new(
+                self.launch_ball_flow_producer.produce(),
+            ))]
         } else {
             vec![Command::FinishGame]
         }

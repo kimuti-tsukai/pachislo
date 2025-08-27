@@ -2,13 +2,12 @@ use std::io::{self, Stdin};
 
 use pachislo::{
     CONFIG_EXAMPLE as CONFIG, Game, START_HOLE_PROBABILITY_EXAMPLE,
-    command::{CauseLottery, Command, FinishGame, LaunchBall, StartGame},
+    command::{Command, FinishGame, LaunchBallFlowProducer, StartGame},
     game::{GameState, Transition},
     interface::{UserInput, UserOutput},
     lottery::LotteryResult,
     slot::SlotProducer,
 };
-use rand::{Rng, rngs::ThreadRng};
 
 fn main() {
     let input = CuiInput::new(START_HOLE_PROBABILITY_EXAMPLE);
@@ -21,8 +20,7 @@ fn main() {
 }
 
 pub struct CuiInput {
-    start_hole_probability: f64,
-    rng: ThreadRng,
+    launch_ball_flow_producer: LaunchBallFlowProducer,
     stdin: Stdin,
 }
 
@@ -34,14 +32,9 @@ impl<O: UserOutput> UserInput<O> for CuiInput {
             match s.trim() {
                 "s" => return vec![Command::Control(Box::new(StartGame))],
                 "l" | "" => {
-                    return if self.rng.random_bool(self.start_hole_probability) {
-                        vec![
-                            Command::Control(Box::new(LaunchBall)),
-                            Command::Control(Box::new(CauseLottery)),
-                        ]
-                    } else {
-                        vec![Command::Control(Box::new(LaunchBall))]
-                    };
+                    return vec![Command::Control(Box::new(
+                        self.launch_ball_flow_producer.produce(),
+                    ))];
                 }
                 "q" => return vec![Command::Control(Box::new(FinishGame))],
                 "q!" => return vec![Command::FinishGame],
@@ -55,8 +48,7 @@ impl CuiInput {
     pub fn new(start_hole_probability: f64) -> Self {
         assert!((0.0..=1.0).contains(&start_hole_probability));
         Self {
-            start_hole_probability,
-            rng: rand::rng(),
+            launch_ball_flow_producer: LaunchBallFlowProducer::new(start_hole_probability),
             stdin: io::stdin(),
         }
     }

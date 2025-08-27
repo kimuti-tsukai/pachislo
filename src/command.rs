@@ -1,3 +1,5 @@
+use rand::{Rng, rngs::ThreadRng};
+
 use crate::{
     game::Game,
     interface::{UserInput, UserOutput},
@@ -65,5 +67,47 @@ where
 {
     fn execute(&mut self, game: &mut Game<I, O>) {
         let _ = game.finish();
+    }
+}
+
+pub struct LaunchBallFlowProducer {
+    start_hole_probability: f64,
+    rng: ThreadRng,
+}
+
+impl LaunchBallFlowProducer {
+    pub fn new(start_hole_probability: f64) -> Self {
+        Self {
+            start_hole_probability,
+            rng: rand::rng(),
+        }
+    }
+
+    pub fn produce(&mut self) -> LaunchBallFlow {
+        LaunchBallFlow::new(self.rng.random_bool(self.start_hole_probability))
+    }
+}
+
+pub struct LaunchBallFlow {
+    is_lottery: bool,
+}
+
+impl LaunchBallFlow {
+    pub fn new(is_lottery: bool) -> Self {
+        Self { is_lottery }
+    }
+}
+
+impl<I, O> ControlCommand<I, O> for LaunchBallFlow
+where
+    I: UserInput<O>,
+    O: UserOutput,
+{
+    fn execute(&mut self, game: &mut Game<I, O>) {
+        let _ = game.launch_ball();
+
+        if self.is_lottery {
+            game.cause_lottery();
+        }
     }
 }
