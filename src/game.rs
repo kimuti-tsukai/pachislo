@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, error::Error, fmt::Display};
+use std::{collections::VecDeque, error::Error, fmt::Display, ops::ControlFlow};
 
 use crate::{
     command::Command,
@@ -138,8 +138,14 @@ impl GameState {
     }
 }
 
-pub struct Game<I, O> {
+pub struct Game<I, O>
+where
+    I: UserInput<O>,
+    O: UserOutput,
+{
+    before_state: Option<GameState>,
     state: GameState,
+    command_queue: VecDeque<Command<I, O>>,
     lottery: Lottery,
     config: BallsConfig,
     input: I,
@@ -154,7 +160,9 @@ where
     pub fn new(config: Config, input: I, output: O) -> Result<Self, ConfigError> {
         config.validate()?;
         Ok(Self {
+            before_state: None,
             state: GameState::Uninitialized,
+            command_queue: VecDeque::new(),
             lottery: Lottery::new(config.probability),
             config: config.balls,
             input,
@@ -162,30 +170,34 @@ where
         })
     }
 
+    pub fn run_step(&mut self) -> ControlFlow<()> {
+        self.output.default(Transition {
+            before: self.before_state,
+            after: &self.state,
+        });
+
+        let Command::Control(mut command) = (loop {
+            if let Some(command) = self.command_queue.pop_front() {
+                break command;
+            }
+            self.command_queue.extend(self.input.wait_for_input());
+        }) else {
+            let _ = self.finish();
+            return ControlFlow::Break(());
+        };
+
+        self.before_state = Some(self.state);
+
+        command.execute(self);
+
+        ControlFlow::Continue(())
+    }
+
     pub fn run(&mut self) {
-        let mut before = None;
-
-        let mut command_queue = VecDeque::new();
-
         loop {
-            self.output.default(Transition {
-                before,
-                after: &self.state,
-            });
-
-            let Command::Control(mut command) = (loop {
-                if let Some(command) = command_queue.pop_front() {
-                    break command;
-                }
-                command_queue.extend(self.input.wait_for_input());
-            }) else {
-                let _ = self.finish();
+            if self.run_step().is_break() {
                 break;
-            };
-
-            before = Some(self.state);
-
-            command.execute(self);
+            }
         }
     }
 

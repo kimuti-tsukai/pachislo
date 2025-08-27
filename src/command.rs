@@ -12,7 +12,11 @@ where
     Control(Box<dyn ControlCommand<I, O>>),
 }
 
-pub trait ControlCommand<I, O> {
+pub trait ControlCommand<I, O>
+where
+    I: UserInput<O>,
+    O: UserOutput,
+{
     fn execute(&mut self, game: &mut Game<I, O>);
 }
 
