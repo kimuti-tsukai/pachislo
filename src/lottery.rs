@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use rand::{Rng, rngs::ThreadRng};
 
 use crate::config::{Probability, SlotProbability};
@@ -72,11 +74,28 @@ impl<R: Rng> Lottery<R> {
         self.lottery(self.probability.rush)
     }
 
-    pub fn lottery_rush_continue(&mut self, n: usize) -> LotteryResult {
+    pub fn lottery_rush_continue(&mut self, n: usize) -> Result<LotteryResult, ProbabilityError> {
         let mut probability = self.probability.rush_continue;
 
         probability.win *= (self.probability.rush_continue_fn)(n);
 
-        self.lottery(probability)
+        if probability.win > 1.0 {
+            return Err(ProbabilityError);
+        }
+
+        Ok(self.lottery(probability))
+    }
+}
+
+/// Error type for invalid probability values.
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
+pub struct ProbabilityError;
+
+impl Display for ProbabilityError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Invalid probability value\nIf it causes in `lottery_rush_continue` function, `Config.probability.rush_continue_fn` may return a value outside the range [0.0, 1.0]"
+        )
     }
 }

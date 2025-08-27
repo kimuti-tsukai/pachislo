@@ -65,7 +65,24 @@ impl ConfigError {
 
 impl Config {
     pub(crate) fn validate(&self) -> Result<(), ConfigError> {
-        self.probability.validate()
+        let mut error = ConfigError::new();
+        if let Err(mut err) = self.balls.validate() {
+            error.append(&mut err);
+        }
+        if let Err(mut err) = self.probability.validate() {
+            error.append(&mut err);
+        }
+        if error.is_empty() { Ok(()) } else { Err(error) }
+    }
+}
+
+impl BallsConfig {
+    pub(crate) fn validate(&self) -> Result<(), ConfigError> {
+        let mut error = ConfigError::new();
+        if self.init_balls < 1 {
+            error.push("initial balls must be greater than 0".to_string());
+        }
+        if error.is_empty() { Ok(()) } else { Err(error) }
     }
 }
 

@@ -244,7 +244,14 @@ where
 
         // When rush
 
-        let continue_lottery = self.lottery.lottery_rush_continue(n);
+        let continue_lottery = match self.lottery.lottery_rush_continue(n) {
+            Ok(lottery) => lottery,
+            Err(error) => {
+                println!("Warn: {}", error);
+                return;
+            }
+        };
+
         self.output.lottery_rush_continue(continue_lottery);
 
         if continue_lottery.is_win() {
