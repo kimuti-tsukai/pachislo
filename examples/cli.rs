@@ -59,7 +59,7 @@ pub struct CuiOutput {
 }
 
 impl UserOutput for CuiOutput {
-    fn default(&mut self, state: Transition<'_>) {
+    fn default(&mut self, state: Transition) {
         let Transition {
             before,
             after: state,

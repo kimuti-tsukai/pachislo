@@ -56,7 +56,7 @@ struct TestOutput {
 }
 
 impl UserOutput for TestOutput {
-    fn default(&mut self, state: Transition<'_>) {
+    fn default(&mut self, state: Transition) {
         let Transition {
             before,
             after: state,

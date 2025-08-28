@@ -7,9 +7,9 @@ use crate::{
     lottery::Lottery,
 };
 
-pub struct Transition<'a> {
+pub struct Transition {
     pub before: Option<GameState>,
-    pub after: &'a GameState,
+    pub after: GameState,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -173,7 +173,7 @@ where
     pub fn run_step(&mut self) -> ControlFlow<()> {
         self.output.default(Transition {
             before: self.before_state,
-            after: &self.state,
+            after: self.state,
         });
 
         let Command::Control(mut command) = (loop {

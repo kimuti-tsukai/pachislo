@@ -9,7 +9,7 @@ pub trait UserInput<O: UserOutput>: Sized {
 }
 
 pub trait UserOutput {
-    fn default(&mut self, state: Transition<'_>);
+    fn default(&mut self, state: Transition);
     fn finish_game(&mut self, state: &GameState);
     fn lottery_normal(&mut self, result: LotteryResult);
     fn lottery_rush(&mut self, result: LotteryResult);
