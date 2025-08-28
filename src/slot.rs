@@ -14,6 +14,7 @@ pub struct SlotProducer<T, R: Rng = ThreadRng> {
 
 impl<T, R: Rng + Default> SlotProducer<T, R> {
     pub fn new(length: usize, choices: Vec<T>) -> Self {
+        assert!(choices.len() > 1, "Choices must have at least two elements");
         Self {
             length,
             choices,
@@ -37,8 +38,6 @@ impl<T: Clone, R: Rng> SlotProducer<T, R> {
     }
 
     pub fn produce_lose(&mut self) -> Vec<T> {
-        assert!(self.choices.len() > 1);
-
         // Vector with reference choices
         let mut ref_choices: Vec<&T> = self.choices.iter().collect();
         ref_choices.shuffle(&mut self.rng);
