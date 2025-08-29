@@ -14,6 +14,19 @@ where
     Control(Box<dyn ControlCommand<I, O>>),
 }
 
+impl<I, O> Command<I, O>
+where
+    I: UserInput<O>,
+    O: UserOutput,
+{
+    pub fn control<C>(control: C) -> Self
+    where
+        C: ControlCommand<I, O> + 'static,
+    {
+        Self::Control(Box::new(control))
+    }
+}
+
 pub trait ControlCommand<I, O>
 where
     I: UserInput<O>,

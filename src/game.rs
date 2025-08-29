@@ -7,6 +7,7 @@ use crate::{
     lottery::Lottery,
 };
 
+#[derive(Debug, Clone, Copy)]
 pub struct Transition {
     pub before: Option<GameState>,
     pub after: GameState,
