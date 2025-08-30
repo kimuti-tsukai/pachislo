@@ -2,6 +2,11 @@
 name = "pachislo"
 version = "0.1.0"
 edition = "2024"
+description = "Pachislo game simulator"
+repository = "https://github.com/kimuti-tsukai/pachislo"
+authors = ["kimuti_tsukai <ruster354@gmail.com>"]
+readme = "README.md"
+license = "MIT"
 
 [dependencies]
 rand = "0.9.1"
