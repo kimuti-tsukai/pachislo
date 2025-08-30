@@ -1,5 +1,7 @@
 use std::{collections::VecDeque, error::Error, fmt::Display, ops::ControlFlow};
 
+use rand::{Rng, rngs::ThreadRng};
+
 use crate::{
     command::Command,
     config::{BallsConfig, Config, ConfigError},
@@ -185,19 +187,22 @@ impl GameState {
 ///
 /// - `I`: User input handler implementing `UserInput<O>`
 /// - `O`: User output handler implementing `UserOutput`
-pub struct Game<I, O>
+/// - `F`: Probability function type implementing `FnMut(usize) -> f64`
+/// - `R`: Random number generator implementing `Rng`
+pub struct Game<I, O, F: FnMut(usize) -> f64 = fn(usize) -> f64, R = ThreadRng>
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    R: Rng,
 {
     /// Previous game state for transition tracking.
     before_state: Option<GameState>,
     /// Current game state.
     state: GameState,
     /// Queue of pending commands to execute.
-    command_queue: VecDeque<Command<I, O>>,
+    command_queue: VecDeque<Command<I, O, F, R>>,
     /// Lottery system for determining outcomes.
-    lottery: Lottery,
+    lottery: Lottery<F, R>,
     /// Ball-related configuration settings.
     config: BallsConfig,
     /// User input handler.
@@ -206,10 +211,12 @@ where
     output: O,
 }
 
-impl<I, O> Game<I, O>
+impl<I, O, F, R> Game<I, O, F, R>
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng + Default,
 {
     /// Creates a new Game instance with the specified configuration and I/O handlers.
     ///
@@ -231,7 +238,7 @@ where
     /// // Assuming you have input and output handlers
     /// let game = Game::new(CONFIG_EXAMPLE, input, output)?;
     /// ```
-    pub fn new(config: Config, input: I, output: O) -> Result<Self, ConfigError> {
+    pub fn new(config: Config<F>, input: I, output: O) -> Result<Self, ConfigError> {
         config.validate()?;
         Ok(Self {
             before_state: None,
@@ -243,7 +250,15 @@ where
             output,
         })
     }
+}
 
+impl<I, O, F, R> Game<I, O, F, R>
+where
+    I: UserInput<O, F, R>,
+    O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
+{
     /// Executes a single step of the game loop.
     ///
     /// This method processes one command from the input queue and updates the game state accordingly.
@@ -270,7 +285,7 @@ where
         };
 
         self.before_state = Some(self.state);
-
+        
         command.execute(self);
 
         ControlFlow::Continue(())

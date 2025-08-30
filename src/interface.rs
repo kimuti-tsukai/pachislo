@@ -1,3 +1,5 @@
+use rand::{rngs::ThreadRng, Rng};
+
 use crate::{
     command::Command,
     game::{GameState, Transition},
@@ -30,7 +32,9 @@ use crate::{
 ///     }
 /// }
 /// ```
-pub trait UserInput<O: UserOutput>: Sized {
+pub trait UserInput<O: UserOutput, F: FnMut(usize) -> f64 = fn(usize) -> f64, R: Rng = ThreadRng>:
+    Sized
+{
     /// Waits for user input and returns a vector of commands to execute.
     ///
     /// This method should block until user input is available and then
@@ -47,7 +51,7 @@ pub trait UserInput<O: UserOutput>: Sized {
     /// - This method may block the calling thread while waiting for input
     /// - Implementors should handle input validation and error cases gracefully
     /// - Consider batching multiple rapid inputs into a single command vector
-    fn wait_for_input(&mut self) -> Vec<Command<Self, O>>;
+    fn wait_for_input(&mut self) -> Vec<Command<Self, O, F, R>>;
 }
 
 /// Trait for handling user output in the pachislot game.

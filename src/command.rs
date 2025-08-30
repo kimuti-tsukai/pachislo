@@ -15,21 +15,27 @@ use crate::{
 ///
 /// * `I` - User input handler type implementing `UserInput<O>`
 /// * `O` - User output handler type implementing `UserOutput`
-pub enum Command<I, O>
+/// * `F` - Function type for generating random numbers
+/// * `R` - Random number generator type implementing `Rng`
+pub enum Command<I, O, F = fn(usize) -> f64, R = ThreadRng>
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
     /// Command to finish the current game session.
     FinishGame,
     /// A boxed control command that can modify game state.
-    Control(Box<dyn ControlCommand<I, O>>),
+    Control(Box<dyn ControlCommand<I, O, F, R>>),
 }
 
-impl<I, O> Command<I, O>
+impl<I, O, F, R> Command<I, O, F, R>
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
     /// Creates a new control command from any type implementing `ControlCommand`.
     ///
@@ -44,7 +50,7 @@ where
     /// A `Command::Control` variant containing the boxed control command.
     pub fn control<C>(control: C) -> Self
     where
-        C: ControlCommand<I, O> + 'static,
+        C: ControlCommand<I, O, F, R> + 'static,
     {
         Self::Control(Box::new(control))
     }
@@ -59,17 +65,21 @@ where
 ///
 /// * `I` - User input handler type implementing `UserInput<O>`
 /// * `O` - User output handler type implementing `UserOutput`
-pub trait ControlCommand<I, O>
+/// * `F` - Function type for calculating the probability of a ball being launched
+/// * `R` - Function type for calculating the reward for a ball being launched
+pub trait ControlCommand<I, O, F = fn(usize) -> f64, R = ThreadRng>
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
     /// Executes the command, potentially modifying the game state.
     ///
     /// # Arguments
     ///
     /// * `game` - Mutable reference to the game instance to operate on
-    fn execute(&mut self, game: &mut Game<I, O>);
+    fn execute(&mut self, game: &mut Game<I, O, F, R>);
 }
 
 /// Command to launch a single ball in the game.
@@ -78,12 +88,14 @@ where
 /// if it's the last ball available.
 pub struct LaunchBall;
 
-impl<I, O> ControlCommand<I, O> for LaunchBall
+impl<I, O, F, R> ControlCommand<I, O, F, R> for LaunchBall
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
-    fn execute(&mut self, game: &mut Game<I, O>) {
+    fn execute(&mut self, game: &mut Game<I, O, F, R>) {
         let _ = game.launch_ball();
     }
 }
@@ -95,12 +107,14 @@ where
 /// rush mode transitions.
 pub struct CauseLottery;
 
-impl<I, O> ControlCommand<I, O> for CauseLottery
+impl<I, O, F, R> ControlCommand<I, O, F, R> for CauseLottery
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
-    fn execute(&mut self, game: &mut Game<I, O>) {
+    fn execute(&mut self, game: &mut Game<I, O, F, R>) {
         game.cause_lottery();
     }
 }
@@ -111,12 +125,14 @@ where
 /// and transitions from the uninitialized state to normal gameplay mode.
 pub struct StartGame;
 
-impl<I, O> ControlCommand<I, O> for StartGame
+impl<I, O, F, R> ControlCommand<I, O, F, R> for StartGame
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
-    fn execute(&mut self, game: &mut Game<I, O>) {
+    fn execute(&mut self, game: &mut Game<I, O, F, R>) {
         let _ = game.start();
     }
 }
@@ -127,12 +143,14 @@ where
 /// to the uninitialized state, making it ready for a new session.
 pub struct FinishGame;
 
-impl<I, O> ControlCommand<I, O> for FinishGame
+impl<I, O, F, R> ControlCommand<I, O, F, R> for FinishGame
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
-    fn execute(&mut self, game: &mut Game<I, O>) {
+    fn execute(&mut self, game: &mut Game<I, O, F, R>) {
         let _ = game.finish();
     }
 }
@@ -202,12 +220,14 @@ impl LaunchBallFlow {
     }
 }
 
-impl<I, O> ControlCommand<I, O> for LaunchBallFlow
+impl<I, O, F, R> ControlCommand<I, O, F, R> for LaunchBallFlow
 where
-    I: UserInput<O>,
+    I: UserInput<O, F, R>,
     O: UserOutput,
+    F: FnMut(usize) -> f64,
+    R: Rng,
 {
-    fn execute(&mut self, game: &mut Game<I, O>) {
+    fn execute(&mut self, game: &mut Game<I, O, F, R>) {
         let _ = game.launch_ball();
 
         if self.is_lottery {

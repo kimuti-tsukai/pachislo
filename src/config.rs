@@ -24,11 +24,11 @@ use std::{error::Error, fmt::Display};
 ///     },
 /// };
 /// ```
-pub struct Config {
+pub struct Config<F: FnMut(usize) -> f64 = fn(usize) -> f64> {
     /// Configuration for ball counts and increments.
     pub balls: BallsConfig,
     /// Configuration for lottery probabilities in different game modes.
-    pub probability: Probability,
+    pub probability: Probability<F>,
 }
 
 /// Configuration for ball counts and increments in the game.
@@ -75,7 +75,7 @@ pub struct SlotProbability {
 /// This structure contains probability settings for different game states and the
 /// mathematical function that controls rush mode continuation decay.
 #[derive(Debug, Clone, Copy)]
-pub struct Probability {
+pub struct Probability<F: FnMut(usize) -> f64 = fn(usize) -> f64> {
     /// Probability settings for normal (standard) game mode.
     pub normal: SlotProbability,
     /// Probability settings for rush (bonus) game mode.
@@ -99,7 +99,7 @@ pub struct Probability {
     /// # Returns
     ///
     /// A multiplier value that should be between 0.0 and 1.0.
-    pub rush_continue_fn: fn(usize) -> f64,
+    pub rush_continue_fn: F,
 }
 
 /// Error type for configuration validation failures.
@@ -138,7 +138,7 @@ impl ConfigError {
     }
 }
 
-impl Config {
+impl<F: FnMut(usize) -> f64> Config<F> {
     pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         let mut error = ConfigError::new();
         if let Err(mut err) = self.balls.validate() {
@@ -161,7 +161,7 @@ impl BallsConfig {
     }
 }
 
-impl Probability {
+impl<F: FnMut(usize) -> f64> Probability<F> {
     pub(crate) fn validate(&self) -> Result<(), ConfigError> {
         let mut error = ConfigError::new();
         if let Err(mut err) = self.normal.validate() {

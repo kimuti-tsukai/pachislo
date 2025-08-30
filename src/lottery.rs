@@ -24,9 +24,9 @@ use crate::config::{Probability, SlotProbability};
 /// let mut lottery = Lottery::new(probability_config);
 /// let result = lottery.lottery_normal();
 /// ```
-pub struct Lottery<R: Rng = ThreadRng> {
+pub struct Lottery<F: FnMut(usize) -> f64 = fn(usize) -> f64, R: Rng = ThreadRng> {
     rng: R,
-    probability: Probability,
+    probability: Probability<F>,
 }
 
 /// Result of a lottery operation.
@@ -88,7 +88,7 @@ impl LotteryResult {
     }
 }
 
-impl<R: Rng + Default> Lottery<R> {
+impl<F: FnMut(usize) -> f64, R: Rng + Default> Lottery<F, R> {
     /// Creates a new Lottery instance with default random number generator.
     ///
     /// # Arguments
@@ -107,7 +107,7 @@ impl<R: Rng + Default> Lottery<R> {
     ///
     /// let lottery = Lottery::new(CONFIG_EXAMPLE.probability);
     /// ```
-    pub fn new(probability: Probability) -> Self {
+    pub fn new(probability: Probability<F>) -> Self {
         Self {
             rng: R::default(),
             probability,
@@ -115,7 +115,7 @@ impl<R: Rng + Default> Lottery<R> {
     }
 }
 
-impl<R: Rng> Lottery<R> {
+impl<F: FnMut(usize) -> f64, R: Rng> Lottery<F, R> {
     /// Creates a new Lottery instance with a custom random number generator.
     ///
     /// This method is useful for testing or when you need deterministic behavior
@@ -129,7 +129,7 @@ impl<R: Rng> Lottery<R> {
     /// # Returns
     ///
     /// A new `Lottery` instance using the provided RNG.
-    pub fn with_rng(probability: Probability, rng: R) -> Self {
+    pub fn with_rng(probability: Probability<F>, rng: R) -> Self {
         Self { rng, probability }
     }
 
