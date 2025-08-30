@@ -164,7 +164,7 @@ let slot_producer = SlotProducer::new(3, vec!['🍒', '🍋', '🔔', '⭐']);
 
 ## Project Structure
 
-```
+```tree
 pachislo/
 ├── src/
 │   ├── lib.rs          # Main library exports and example config

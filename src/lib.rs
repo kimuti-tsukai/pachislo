@@ -1,17 +1,40 @@
+#![doc = include_str!("../README.md")]
+
+/// Command handling module for game control operations.
 pub mod command;
+/// Configuration module for game settings and parameters.
 pub mod config;
+/// Core game logic and state management.
 pub mod game;
+/// User input and output interface traits.
 pub mod interface;
+/// Lottery system for determining game outcomes.
 pub mod lottery;
+/// Slot machine visual representation and logic.
 pub mod slot;
 
+/// Re-export of the main Game struct for convenient access.
 pub use game::Game;
 
 use crate::config::{BallsConfig, Config, Probability, SlotProbability};
 
+/// Example probability value for starting hole entrance.
+///
+/// This represents a 12% chance that a launched ball will enter the starting hole
+/// and trigger a lottery event.
 pub const START_HOLE_PROBABILITY_EXAMPLE: f64 = 0.12;
 
-// Config of Game
+/// Example configuration for the pachislot game.
+///
+/// This provides a pre-configured setup with balanced probabilities and ball counts
+/// suitable for typical gameplay. The configuration includes:
+///
+/// - Initial balls: 1000
+/// - Ball increments for wins: 15
+/// - Rush mode ball bonus: 300
+/// - Normal mode win probability: 16%
+/// - Rush mode win probability: 48%
+/// - Rush continuation probability: 80% (with decay)
 pub const CONFIG_EXAMPLE: Config = Config {
     // Config of Balls
     balls: BallsConfig {
