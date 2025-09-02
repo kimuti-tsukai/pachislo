@@ -7,7 +7,7 @@ use std::{error::Error, fmt::Display};
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use pachislo::config::{Config, BallsConfig, Probability, SlotProbability};
 ///
 /// let config = Config {

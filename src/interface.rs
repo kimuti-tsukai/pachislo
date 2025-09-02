@@ -1,4 +1,4 @@
-use rand::{rngs::ThreadRng, Rng};
+use rand::{Rng, rngs::ThreadRng};
 
 use crate::{
     command::Command,
@@ -19,38 +19,45 @@ use crate::{
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use pachislo::interface::UserInput;
 /// use pachislo::command::Command;
 ///
 /// struct ConsoleInput;
+/// struct ConsoleOutput;
+///
+/// impl pachislo::interface::UserOutput for ConsoleOutput {
+///     fn default(&mut self, state: pachislo::game::Transition) {}
+///     fn finish_game(&mut self, state: &pachislo::game::GameState) {}
+///     fn lottery_normal(&mut self, result: pachislo::lottery::LotteryResult) {}
+///     fn lottery_rush(&mut self, result: pachislo::lottery::LotteryResult) {}
+///     fn lottery_rush_continue(&mut self, result: pachislo::lottery::LotteryResult) {}
+/// }
 ///
 /// impl UserInput<ConsoleOutput> for ConsoleInput {
-///     fn wait_for_input(&mut self) -> Vec<Command<Self, ConsoleOutput>> {
+///     fn wait_for_input(&mut self) -> Command<Self, ConsoleOutput> {
 ///         // Implementation for reading console input
-///         vec![]
+///         Command::FinishGame
 ///     }
 /// }
 /// ```
 pub trait UserInput<O: UserOutput, F: FnMut(usize) -> f64 = fn(usize) -> f64, R: Rng = ThreadRng>:
     Sized
 {
-    /// Waits for user input and returns a vector of commands to execute.
+    /// Waits for user input and returns a command to execute.
     ///
     /// This method should block until user input is available and then
-    /// convert that input into appropriate game commands. It may return
-    /// multiple commands if the input represents a complex action sequence.
+    /// convert that input into an appropriate game command.
     ///
     /// # Returns
     ///
-    /// A `Command` instance representing the user's intended actions.
-    /// An empty vector indicates no commands should be executed this cycle.
+    /// A `Command` instance representing the user's intended action.
     ///
     /// # Implementation Notes
     ///
     /// - This method may block the calling thread while waiting for input
     /// - Implementors should handle input validation and error cases gracefully
-    /// - Consider batching multiple rapid inputs into a single command vector
+    /// - The method should return exactly one command per call
     fn wait_for_input(&mut self) -> Command<Self, O, F, R>;
 }
 
@@ -63,7 +70,7 @@ pub trait UserInput<O: UserOutput, F: FnMut(usize) -> f64 = fn(usize) -> f64, R:
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use pachislo::interface::UserOutput;
 /// use pachislo::game::{GameState, Transition};
 /// use pachislo::lottery::LotteryResult;

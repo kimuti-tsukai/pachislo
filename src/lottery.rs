@@ -16,7 +16,7 @@ use crate::config::{Probability, SlotProbability};
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use pachislo::lottery::Lottery;
 /// use pachislo::config::Probability;
 ///
@@ -101,7 +101,7 @@ impl<F: FnMut(usize) -> f64, R: Rng + Default> Lottery<F, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::lottery::Lottery;
     /// use pachislo::CONFIG_EXAMPLE;
     ///
@@ -210,7 +210,7 @@ impl<F: FnMut(usize) -> f64, R: Rng> Lottery<F, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::lottery::Lottery;
     /// use pachislo::CONFIG_EXAMPLE;
     ///

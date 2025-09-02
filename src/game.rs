@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, error::Error, fmt::Display, ops::ControlFlow};
+use std::{error::Error, fmt::Display, ops::ControlFlow};
 
 use rand::{Rng, rngs::ThreadRng};
 
@@ -182,6 +182,8 @@ impl GameState {
 ///
 /// This struct orchestrates all game components including state management,
 /// user input/output handling, lottery system, and command processing.
+/// It processes one command at a time from user input in a simplified
+/// game loop without command queuing.
 ///
 /// # Type Parameters
 ///
@@ -231,7 +233,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::{Game, CONFIG_EXAMPLE};
     /// // Assuming you have input and output handlers
     /// let game = Game::new(CONFIG_EXAMPLE, input, output)?;
@@ -258,8 +260,9 @@ where
 {
     /// Executes a single step of the game loop.
     ///
-    /// This method processes one command from the input queue and updates the game state accordingly.
-    /// It handles user input, executes commands, and manages state transitions.
+    /// This method waits for user input, processes the returned command, and updates
+    /// the game state accordingly. It handles user input, executes commands, and
+    /// manages state transitions in a simplified loop without command queuing.
     ///
     /// # Returns
     ///

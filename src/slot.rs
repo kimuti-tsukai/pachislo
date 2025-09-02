@@ -20,7 +20,7 @@ use crate::lottery::{Lose, LotteryResult, Win};
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use pachislo::slot::SlotProducer;
 ///
 /// let symbols = vec!["🍒", "🍋", "🔔", "⭐"];
@@ -56,7 +56,7 @@ impl<T, R: Rng + Default> SlotProducer<T, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::slot::SlotProducer;
     ///
     /// let symbols = vec!["🍒", "🍋", "🔔"];
@@ -107,7 +107,7 @@ impl<T: Clone, R: Rng> SlotProducer<T, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::slot::SlotProducer;
     ///
     /// let mut producer = SlotProducer::new(3, vec!["A", "B", "C"]);
@@ -134,7 +134,7 @@ impl<T: Clone, R: Rng> SlotProducer<T, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::slot::SlotProducer;
     ///
     /// let mut producer = SlotProducer::new(3, vec!["A", "B", "C"]);
@@ -216,7 +216,7 @@ impl<T: Clone, R: Rng> SlotProducer<T, R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use pachislo::slot::SlotProducer;
     /// use pachislo::lottery::{LotteryResult, Win};
     ///

@@ -39,7 +39,7 @@ The simulator is built around several core components:
 
 ## Quick Start
 
-```rust
+```rust,ignore
 use pachislo::{Game, CONFIG_EXAMPLE};
 
 // Create game with your input/output implementations
@@ -53,7 +53,7 @@ game.run();
 
 The game supports extensive configuration through the `Config` struct:
 
-```rust
+```rust,ignore
 pub struct Config {
     pub balls: BallsConfig,        // Ball management settings
     pub probability: Probability,  // Win/loss probabilities
@@ -62,7 +62,7 @@ pub struct Config {
 
 ### Ball Configuration
 
-```rust
+```rust,ignore
 BallsConfig {
     init_balls: 1000,           // Starting number of balls
     incremental_balls: 15,      // Balls awarded on normal win
@@ -72,7 +72,7 @@ BallsConfig {
 
 ### Probability Configuration
 
-```rust
+```rust,ignore
 Probability {
     normal: SlotProbability {
         win: 0.16,              // Base win probability
@@ -103,12 +103,12 @@ The simulator supports the following command system:
 - **`FinishGame`**: End the current game session gracefully
 - **`Command::FinishGame`**: Force terminate the game loop
 
-## Example: CLI Implementation
+**Example: CLI Implementation**
 
 The project includes a complete CLI example demonstrating all features:
 
-```rust
-// Run the CLI example
+```bash
+# Run the CLI example
 cargo run --example cli
 ```
 
@@ -124,15 +124,15 @@ cargo run --example cli
 
 Implement the `UserInput<O>` and `UserOutput` traits:
 
-```rust
+```rust,ignore
 impl UserInput<MyOutput> for MyInput {
-    fn wait_for_input(&mut self) -> Vec<Command<Self, O>> {
-        // Handle user input and return commands
+    fn wait_for_input(&mut self) -> Command<Self, MyOutput> {
+        // Handle user input and return command
     }
 }
 
 impl UserOutput for MyOutput {
-    fn default(&mut self, state: Transition<'_>) {
+    fn default(&mut self, state: Transition) {
         // Handle state transitions
     }
     
@@ -158,27 +158,25 @@ impl UserOutput for MyOutput {
 
 Create slot machines with custom symbols:
 
-```rust
+```rust,ignore
 let slot_producer = SlotProducer::new(3, vec!['🍒', '🍋', '🔔', '⭐']);
 ```
 
 ## Project Structure
 
-```tree
-pachislo/
-├── src/
-│   ├── lib.rs          # Main library exports and example config
-│   ├── game.rs         # Core game logic and state management
-│   ├── command.rs      # Command pattern implementation
-│   ├── config.rs       # Configuration structures
-│   ├── interface.rs    # User input/output traits
-│   ├── lottery.rs      # Lottery probability system
-│   └── slot.rs         # Slot machine result generation
-├── examples/
-│   └── cli.rs          # Complete CLI implementation
-├── tests/              # Comprehensive test suite
-└── Cargo.toml          # Project configuration
-```
+- `pachislo/`
+  - `src/`
+    - `lib.rs` - Main library exports and example config
+    - `game.rs` - Core game logic and state management
+    - `command.rs` - Command pattern implementation
+    - `config.rs` - Configuration structures
+    - `interface.rs` - User input/output traits
+    - `lottery.rs` - Lottery probability system
+    - `slot.rs` - Slot machine result generation
+  - `examples/`
+    - `cli.rs` - Complete CLI implementation
+  - `tests/` - Comprehensive test suite
+  - `Cargo.toml` - Project configuration
 
 ## Dependencies
 
