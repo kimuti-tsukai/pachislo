@@ -29,18 +29,18 @@ impl TestInput {
 }
 
 impl UserInput<TestOutput> for TestInput {
-    fn wait_for_input(&mut self) -> Vec<Command<Self, TestOutput>> {
+    fn wait_for_input(&mut self) -> Command<Self, TestOutput> {
         if self.first {
             self.first = false;
-            vec![Command::Control(Box::new(StartGame))]
+            Command::Control(Box::new(StartGame))
         } else if self.n > 0 {
             self.n -= 1;
 
-            vec![Command::Control(Box::new(
+            Command::Control(Box::new(
                 self.launch_ball_flow_producer.produce(),
-            ))]
+            ))
         } else {
-            vec![Command::FinishGame]
+            Command::FinishGame
         }
     }
 }

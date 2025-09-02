@@ -43,7 +43,7 @@ pub trait UserInput<O: UserOutput, F: FnMut(usize) -> f64 = fn(usize) -> f64, R:
     ///
     /// # Returns
     ///
-    /// A vector of `Command` instances representing the user's intended actions.
+    /// A `Command` instance representing the user's intended actions.
     /// An empty vector indicates no commands should be executed this cycle.
     ///
     /// # Implementation Notes
@@ -51,7 +51,7 @@ pub trait UserInput<O: UserOutput, F: FnMut(usize) -> f64 = fn(usize) -> f64, R:
     /// - This method may block the calling thread while waiting for input
     /// - Implementors should handle input validation and error cases gracefully
     /// - Consider batching multiple rapid inputs into a single command vector
-    fn wait_for_input(&mut self) -> Vec<Command<Self, O, F, R>>;
+    fn wait_for_input(&mut self) -> Command<Self, O, F, R>;
 }
 
 /// Trait for handling user output in the pachislot game.

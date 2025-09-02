@@ -199,8 +199,6 @@ where
     before_state: Option<GameState>,
     /// Current game state.
     state: GameState,
-    /// Queue of pending commands to execute.
-    command_queue: VecDeque<Command<I, O, F, R>>,
     /// Lottery system for determining outcomes.
     lottery: Lottery<F, R>,
     /// Ball-related configuration settings.
@@ -243,7 +241,6 @@ where
         Ok(Self {
             before_state: None,
             state: GameState::Uninitialized,
-            command_queue: VecDeque::new(),
             lottery: Lottery::new(config.probability),
             config: config.balls,
             input,
@@ -274,18 +271,13 @@ where
             after: self.state,
         });
 
-        let Command::Control(mut command) = (loop {
-            if let Some(command) = self.command_queue.pop_front() {
-                break command;
-            }
-            self.command_queue.extend(self.input.wait_for_input());
-        }) else {
-            let _ = self.finish();
-            return ControlFlow::Break(());
+        let mut command = match self.input.wait_for_input() {
+            Command::Control(cmd) => cmd,
+            Command::FinishGame => return ControlFlow::Break(()),
         };
 
         self.before_state = Some(self.state);
-        
+
         command.execute(self);
 
         ControlFlow::Continue(())

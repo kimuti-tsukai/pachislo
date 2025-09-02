@@ -25,19 +25,17 @@ pub struct CuiInput {
 }
 
 impl<O: UserOutput> UserInput<O> for CuiInput {
-    fn wait_for_input(&mut self) -> Vec<Command<Self, O>> {
+    fn wait_for_input(&mut self) -> Command<Self, O> {
         loop {
             let mut s = String::new();
             self.stdin.read_line(&mut s).ok();
             match s.trim() {
-                "s" => return vec![Command::Control(Box::new(StartGame))],
+                "s" => return Command::Control(Box::new(StartGame)),
                 "l" | "" => {
-                    return vec![Command::Control(Box::new(
-                        self.launch_ball_flow_producer.produce(),
-                    ))];
+                    return Command::Control(Box::new(self.launch_ball_flow_producer.produce()));
                 }
-                "q" => return vec![Command::Control(Box::new(FinishGame))],
-                "q!" => return vec![Command::FinishGame],
+                "q" => return Command::Control(Box::new(FinishGame)),
+                "q!" => return Command::FinishGame,
                 _ => (),
             }
         }
