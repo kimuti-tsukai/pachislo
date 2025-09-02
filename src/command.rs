@@ -65,8 +65,8 @@ where
 ///
 /// * `I` - User input handler type implementing `UserInput<O>`
 /// * `O` - User output handler type implementing `UserOutput`
-/// * `F` - Function type for calculating the probability of a ball being launched
-/// * `R` - Function type for calculating the reward for a ball being launched
+/// * `F` - Function type for probability calculations implementing `FnMut(usize) -> f64`
+/// * `R` - Random number generator type implementing `Rng`
 pub trait ControlCommand<I, O, F = fn(usize) -> f64, R = ThreadRng>
 where
     I: UserInput<O, F, R>,
