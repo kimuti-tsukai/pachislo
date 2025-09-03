@@ -269,17 +269,37 @@ where
     /// - `ControlFlow::Continue(())` if the game should continue running
     /// - `ControlFlow::Break(())` if the game should terminate
     pub fn run_step(&mut self) -> ControlFlow<()> {
+        let command = self.input.wait_for_input();
+
+        self.run_step_with_command(command)
+    }
+
+    /// Runs a single step of the game with a given command.
+    ///
+    /// This method processes the provided command, updates the game state, and
+    /// handles any necessary state transitions. It is useful for testing or
+    /// integrating with external systems that provide commands.
+    ///
+    /// # Parameters
+    ///
+    /// - `command`: The command to execute during this step.
+    ///
+    /// # Returns
+    ///
+    /// - `ControlFlow::Continue(())` if the game should continue running
+    /// - `ControlFlow::Break(())` if the game should terminate
+    pub fn run_step_with_command(&mut self, command: Command<I, O, F, R>) -> ControlFlow<()> {
         self.output.default(Transition {
             before: self.before_state,
             after: self.state,
         });
 
-        let mut command = match self.input.wait_for_input() {
+        self.before_state = Some(self.state);
+
+        let mut command = match command {
             Command::Control(cmd) => cmd,
             Command::FinishGame => return ControlFlow::Break(()),
         };
-
-        self.before_state = Some(self.state);
 
         command.execute(self);
 
